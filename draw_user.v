@@ -47,14 +47,15 @@ parameter YELLOW_RGB = 12'hFF0     //rectangle's coulour (default: yellow)
     output reg [10:0] vcount_out,
     output reg vsync_out,
     output reg vblank_out,
-    output reg [11:0] rgb_out
+    output reg [11:0] rgb_out,
+    output reg game_won
     //output wire [11:0] pixel_addr
 );
 
 reg [11:0] rgb_temp, rgb_out_nxt;
 //wire [11:0] addrx, addry;
 reg [10:0] hcount_temp, vcount_temp;
-reg hsync_temp, vsync_temp, hblank_temp, vblank_temp; 
+reg hsync_temp, vsync_temp, hblank_temp, vblank_temp, game_won_nxt; 
  
 //assign addry = vcount_in - y_pos;
 //assign addrx = hcount_in - x_pos;
@@ -70,13 +71,14 @@ always @(posedge pclk)
     vcount_temp <= 0;
     vsync_temp <= 0;
     vblank_temp <= 0;
-  
+     
     hcount_out <= 0;
     hsync_out <= 0;
     hblank_out <= 0;
     vcount_out <= 0;
     vsync_out <= 0;
     vblank_out <= 0;
+    game_won <= 0; 
     
     rgb_out <= 0;  
   end
@@ -86,8 +88,7 @@ always @(posedge pclk)
     hblank_temp <= hblank_in;
     vcount_temp <= vcount_in;
     vsync_temp <= vsync_in;
-    vblank_temp <= vblank_in;
-    
+    vblank_temp <= vblank_in;   
     rgb_temp <= rgb_in;
     
     hcount_out <= hcount_temp;
@@ -96,7 +97,7 @@ always @(posedge pclk)
     vcount_out <= vcount_temp;
     vsync_out <= vsync_temp;
     vblank_out <= vblank_temp;    
-    
+    game_won <= game_won_nxt;     
     rgb_out <= rgb_out_nxt;
 end
 
@@ -105,6 +106,7 @@ end
 //             is returning the same xypos value if xypos is colliding
 //             with static obstacles
 always @* begin 
+  game_won_nxt = 1'b0;   
   if  (vblank_temp || hblank_temp)      //inactive screen
     rgb_out_nxt = rgb_temp;
   else begin   //active screen
@@ -114,6 +116,10 @@ always @* begin
     else if (hcount_temp >= x_pos && vcount_temp >= y_pos && hcount_temp < (x_pos+WIDTH) && vcount_temp < (y_pos+HEIGHT)) rgb_out_nxt = YELLOW_RGB;
     else    //not-rectangle area
         rgb_out_nxt = rgb_temp; 
+        
+     // destination reached? not ideally, but at least covering the quarter of the doors' surface
+        if ( (x_pos + WIDTH) > 750 && (y_pos+HEIGHT) < 400 && y_pos > 200 )  //make sure to block the user on the right edge of the screen 
+           game_won_nxt = 1'b1;        
     end            
 end
 

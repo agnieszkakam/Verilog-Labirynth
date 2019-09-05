@@ -96,15 +96,17 @@ else begin
    end
 end
 
+/* "Warning: registers char_x, char_y are trimmed."
+This is expected behaviour, acceptable to prevent from overflow. */
 assign char_line = char_y[3:0];
 assign char_yx = {char_y[7:4],char_x[6:3]};          //{y_char,x_char}
   
 //print char 
 always @* begin
+    char_y = vcount_in-YPOS; 
+    char_x = hcount_in-XPOS;
+    char_x_del = hcount_temp-XPOS;
     if (enable) begin
-         char_y = vcount_in-YPOS; 
-         char_x = hcount_in-XPOS;
-         char_x_del = hcount_temp-XPOS;
          if (hcount_temp >= XPOS && hcount_temp < (WIDTH + XPOS)
              && vcount_temp >= YPOS && vcount_temp < (HEIGHT + YPOS)
              && (char_pixels[7 - char_x_del[2:0]]))       // 'char' rectangle

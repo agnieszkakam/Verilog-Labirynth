@@ -187,6 +187,7 @@ user_pos_ctl user_pos_ctl (
     .dynamic_o_ypos(ypos_o)
 );
 
+  wire game_won; 
   wire [10:0] vcount_out_u, hcount_out_u;
   wire vsync_out_u, hsync_out_u;
   wire vblnk_out_u, hblnk_out_u;
@@ -211,7 +212,8 @@ user_pos_ctl user_pos_ctl (
      .vcount_out(vcount_out_u),
      .vsync_out(vsync_out_u),
      .vblank_out(vblnk_out_u),
-     .rgb_out(rgb_out_u)
+     .rgb_out(rgb_out_u),
+     .game_won(game_won)
   );
   
   
@@ -228,25 +230,33 @@ user_pos_ctl user_pos_ctl (
   wire [7:0] char_yx;
   wire [6:0] char_code;
   
-  char_rom_16x16 my_char_rom_16x16 (
-  
-    .game_stage(game_stage),
+  char_rom_16x16 goodbye_char_rom (
+    //.game_stage(1'b0),
     .char_yx(char_yx),
-    .char_code(char_code)
-  
+    .char_code(char_code)  
   );
   
-  wire enable;
   wire [10:0] vcount_out_char, hcount_out_char;
   wire vsync_out_char, hsync_out_char;
   wire vblnk_out_char, hblnk_out_char;
   wire [11:0] rgb_out_char;
+  wire [7:0] char_line_pixels;
+  wire [3:0] char_line;
   
-  draw_rect_char my_draw_rect_char (
+  font_rom my_font(
+  
+    .clk(pclk),
+    .rst(rst),
+    .addr({char_code[6:0],char_line[3:0]}),
+    .char_line_pixels(char_line_pixels)
+  
+  );
+  
+  draw_rect_char  #(.XPOS(350), .YPOS(310)) goodbye_note (
   
   .clk(pclk),    
   .rst(rst),     
-  .enable(enable),         
+  .enable(game_won),                  //connect there a signal when destiantion reached       
   .hcount_in(hcount_out_u),
   .hsync_in(hsync_out_u),  
   .hblank_in(hblnk_out_u), 
@@ -254,7 +264,7 @@ user_pos_ctl user_pos_ctl (
   .vsync_in(vsync_out_u),
   .vblank_in(vblnk_out_u),
   .rgb_in(rgb_out_u),
-  .char_pixels(),
+  .char_pixels(char_line_pixels),
                    
   .hcount_out(hcount_out_char),
   .hsync_out(hsync_out_char), 
@@ -264,7 +274,7 @@ user_pos_ctl user_pos_ctl (
   .vblank_out(vblnk_out_char),
   .rgb_out(rgb_out_char),
   .char_yx(char_yx),
-  .char_line(char_code[3:0])
+  .char_line(char_line)
   
   );
   
@@ -275,9 +285,9 @@ user_pos_ctl user_pos_ctl (
         {r,g,b} <= 0;
     end
     else begin
-        vs <= vsync_out_u;
-        hs <= hsync_out_u;
-        {r,g,b} <= rgb_out_u;
+        vs <= vsync_out_char;
+        hs <= hsync_out_char;
+        {r,g,b} <= rgb_out_char;
     end
   end
   
