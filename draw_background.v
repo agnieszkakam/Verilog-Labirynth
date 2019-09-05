@@ -42,8 +42,9 @@ module draw_background(
 
     //*** violet colour (RGB)
   localparam VIOLET_RGB = {4'h8, 4'h2, 4'hC};   
-    //*** brown colour (RGB)  
-  localparam BROWN_RGB = 12'h530;
+  
+  localparam BROWN_RGB = 12'h530; 
+
     //*** pink colour (RGB)
  // localparam PINK_RGB = {4'hB, 4'h5, 4'h9}; 
   
@@ -102,12 +103,23 @@ always @*
                 rgb_out_nxt = VIOLET_RGB;
                 
         // destination = "door"
-        else if ( (hcount_in >= 700 && vcount_in >= 250 &&
-            hcount_in < 800 && vcount_in < 350)  )
+       
+       
+      else if ( (hcount_in >= 720 && vcount_in >= 310 &&
+        hcount_in < 730 && vcount_in < 320)  )
+            rgb_out_nxt = 12'h500;     
+      else if ( (hcount_in >= 710 && vcount_in >= 250 &&
+            hcount_in < 790 && vcount_in < 390)  )
                 rgb_out_nxt = BROWN_RGB;
-                
+      else if ( (hcount_in >= 700 && vcount_in >= 240 &&
+            hcount_in < 780 && vcount_in < 380)  )
+                rgb_out_nxt = 12'h500;
+      //else if ( (hcount_in >= 700 && vcount_in >= 200 &&
+            //hcount_in < 800 && vcount_in < 400)  )
+                //rgb_out_nxt = BROWN_RGB;          
+
         // Active display, edges, make yellow lines.
-        else if ((vcount_in == 0) || (vcount_in == 599) || (hcount_in == 0) || (hcount_in == 799))
+      else if ((vcount_in == 0) || (vcount_in == 599) || (hcount_in == 0) || (hcount_in == 799))
                 rgb_out_nxt = 12'hf_f_0;
                                       
       // Active display, interior, fill with gray.

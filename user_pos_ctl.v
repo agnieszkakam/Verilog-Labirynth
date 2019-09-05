@@ -25,6 +25,8 @@ module user_pos_ctl(
     input wire rst,
     input wire [3:0] keys,       // {keyU,keyD,keyR,keyL}
     //input wire [17:0] st_obst_xy,       // st_obst_xy = {STAT_OBST_1_X,STAT_OBST_1_Y,STAT_OBST_2_X,STAT_OBST_2_Y,STAT_OBST_3_X,STAT_OBST_3_Y};
+    input wire [11:0] dynamic_o_xpos,
+    input wire [11:0] dynamic_o_ypos,
     
     output reg [11:0] xpos,
     output reg [11:0] ypos
@@ -36,8 +38,8 @@ reg [11:0] xpos_nxt, ypos_nxt;
 
 always @(posedge clk) begin
     if (rst) begin
-        xpos <= 12'b0;
-        ypos <= 12'b0;
+        xpos <= 1;
+        ypos <= 1;
     end
     else begin
         xpos <= xpos_nxt;
@@ -47,12 +49,21 @@ end
 
 always @* begin
 
-    if (keys[3]) begin //UP
-        if ( xpos >= 0 && xpos <= 699 && ypos >= 0 && ypos <= 499 ) begin
-            if ( (xpos >= 1 && xpos < 200 && ypos >= 0 && ypos <= 100) || ( xpos >= 101 && xpos < 300 && 
+    if ( (xpos >= dynamic_o_xpos - 100 && xpos <= dynamic_o_xpos + 50) && (ypos >= dynamic_o_ypos - 100 && ypos <= dynamic_o_ypos + 250) ) begin
+        xpos_nxt = 1;
+        ypos_nxt = 1;
+    end
+
+    else if (keys[3]) begin //UP
+        if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
+            if ( (xpos >= 1 && xpos < 200 && ypos >= 1 && ypos <= 100) || ( xpos >= 101 && xpos < 300 && 
             ypos >= 100 && ypos <= 200) || (xpos >= 201 && xpos < 400 && ypos >= 200 && ypos <= 300) ) begin
                 xpos_nxt = xpos;
                 ypos_nxt = ypos;
+            end
+            else if ( (xpos >= dynamic_o_xpos - 100 && xpos <= dynamic_o_xpos + 50) && (ypos >= dynamic_o_ypos - 100 && ypos <= dynamic_o_ypos + 250) ) begin
+                xpos_nxt = 1;
+                ypos_nxt = 1;
             end
             else begin
                 xpos_nxt = xpos;
@@ -60,22 +71,22 @@ always @* begin
             end
             end
         //monitor borders
-        else if (xpos < 0) begin
-            xpos_nxt = 0;
+        else if (xpos < 1) begin
+            xpos_nxt = 1;
             ypos_nxt = ypos;
         end
         else if (xpos > 699) begin
             xpos_nxt = 699;
             ypos_nxt = ypos;
         end     
-        else if (ypos < 0) begin
+        else if (ypos < 1 ) begin
             xpos_nxt = xpos;
-            ypos_nxt = 0;
+            ypos_nxt = 1;
         end        
         else if (ypos > 499) begin
               xpos_nxt = xpos;
               ypos_nxt = 499;
-        end
+        end      
         else begin
             xpos_nxt = xpos;
             ypos_nxt = ypos;
@@ -83,10 +94,14 @@ always @* begin
     end
   
     else if (keys[2]) begin //DOWN
-        if ( xpos >= 0 && xpos <= 699 && ypos >= 0 && ypos <= 499 ) begin
-            if ( (xpos >= 101 && xpos < 300 && ypos > 0 && ypos < 200) || (xpos >= 201 && xpos < 400 && ypos >= 100 && ypos < 200) ) begin
+        if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
+            if ( (xpos >= 101 && xpos < 300 && ypos >= 1 && ypos < 200) || (xpos >= 201 && xpos < 400 && ypos >= 100 && ypos < 200) ) begin
                 xpos_nxt = xpos;
                 ypos_nxt = ypos;
+            end
+            else if ( (xpos >= dynamic_o_xpos - 100 && xpos <= dynamic_o_xpos + 50) && (ypos >= dynamic_o_ypos - 100 && ypos <= dynamic_o_ypos + 250) ) begin
+                xpos_nxt = 1;
+                ypos_nxt = 1;
             end
             else begin
                 xpos_nxt = xpos;
@@ -94,17 +109,17 @@ always @* begin
             end
             end
         //monitor borders    
-        else if (xpos < 0) begin
-            xpos_nxt = 0;
+        else if (xpos < 1) begin
+            xpos_nxt = 1;
             ypos_nxt = ypos;
         end
         else if (xpos > 699) begin
             xpos_nxt = 699;
             ypos_nxt = ypos;
         end     
-        else if (ypos < 0) begin
+        else if (ypos < 1) begin
             xpos_nxt = xpos;
-            ypos_nxt = 0;
+            ypos_nxt = 1;
         end        
         else if (ypos > 499) begin
               xpos_nxt = xpos;
@@ -117,11 +132,15 @@ always @* begin
     end
    
     else if (keys[1]) begin //RIGHT
-        if ( xpos >= 0 && xpos <= 699 && ypos >= 0 && ypos <= 499 ) begin
-            if ( (xpos >= 0 && xpos <= 100 && ypos >= 0 && ypos < 100) || (xpos >= 100 && xpos < 200 && ypos >= 1 && ypos < 200) ||
+        if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
+            if ( (xpos >= 1 && xpos <= 100 && ypos >= 1 && ypos < 100) || (xpos >= 100 && xpos < 200 && ypos >= 1 && ypos < 200) ||
             (xpos >= 200 && xpos < 300 && ypos >= 101 && ypos < 300) ) begin
                  xpos_nxt = xpos;
                  ypos_nxt = ypos;
+             end
+             else if ( (xpos >= dynamic_o_xpos - 100 && xpos <= dynamic_o_xpos + 50) && (ypos >= dynamic_o_ypos - 100 && ypos <= dynamic_o_ypos + 250) ) begin
+                 xpos_nxt = 1;
+                 ypos_nxt = 1;
              end
              else begin
                  xpos_nxt = xpos + 1;
@@ -129,17 +148,17 @@ always @* begin
              end
              end
         //monitor borders
-        else if (xpos < 0) begin
-            xpos_nxt = 0;
+        else if (xpos < 1) begin
+            xpos_nxt = 1;
             ypos_nxt = ypos;
         end
         else if (xpos > 699) begin
             xpos_nxt = 699;
             ypos_nxt = ypos;
         end       
-        else if (ypos < 0) begin
+        else if (ypos < 1) begin
             xpos_nxt = xpos;
-            ypos_nxt = 0;
+            ypos_nxt = 1;
         end        
         else if (ypos > 499) begin
               xpos_nxt = xpos;
@@ -152,11 +171,15 @@ always @* begin
     end    
     
     else if (keys[0]) begin //LEFT
-        if ( xpos >= 0 && xpos <= 699 && ypos >= 0 && ypos <= 499 ) begin
-            if ( (xpos >= 100 && xpos <= 200 && ypos >= 0 && ypos < 100) || (xpos >= 200 && xpos <= 300 && ypos >= 1 && ypos < 200) ||
+        if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
+            if ( (xpos >= 100 && xpos <= 200 && ypos >= 1 && ypos < 100) || (xpos >= 200 && xpos <= 300 && ypos >= 1 && ypos < 200) ||
             (xpos >= 300 && xpos <= 400 && ypos >= 101 && ypos < 300) ) begin
                  xpos_nxt = xpos;
                  ypos_nxt = ypos;
+             end
+             else if ( xpos <= dynamic_o_xpos + 50 && (ypos >= dynamic_o_ypos - 100 && ypos <= dynamic_o_ypos + 250) ) begin
+                 xpos_nxt = 1;
+                 ypos_nxt = 1;
              end
              else begin
                  xpos_nxt = xpos - 1;
@@ -164,22 +187,22 @@ always @* begin
                 end
                 end
         //monitor borders        
-        else if (xpos < 0) begin
-            xpos_nxt = 0;
+        else if (xpos < 1) begin
+            xpos_nxt = 1;
             ypos_nxt = ypos;
         end
         else if (xpos > 699) begin
             xpos_nxt = 699;
             ypos_nxt = ypos;
         end       
-        else if (ypos < 0) begin
+        else if (ypos < 1) begin
             xpos_nxt = xpos;
-            ypos_nxt = 0;
+            ypos_nxt = 1;
         end        
         else if (ypos > 499) begin
               xpos_nxt = xpos;
               ypos_nxt = 499;
-        end        
+        end
         else begin
             xpos_nxt = xpos;
             ypos_nxt = ypos;

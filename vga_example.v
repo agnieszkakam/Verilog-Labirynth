@@ -45,6 +45,13 @@ module vga_example (
      .clk_div (clk_100Hz)           
   );
   
+  wire clk_500Hz;
+  
+  clk_divider #(.FREQ_OUT(500)) clk_divider_500Hz (
+     .clk100MHz(clk100MHz),        //input clock 100 MHz
+     .rst (rst),                  
+     .clk_div (clk_500Hz)           
+  );
 
   // Instantiate the vga_timing module, which is
   // the module you are designing for 1st lab.
@@ -169,13 +176,15 @@ debounce rst_debounce (
 wire [11:0] user_xpos, user_ypos;
 
 user_pos_ctl user_pos_ctl (
-    .clk(clk_100Hz),
+    .clk(clk_500Hz),
     .rst(rst),
     .keys({keyU,keyD,keyR,keyL}),       // {keyU,keyD,keyR,keyL}
     //.st_obst_xy(st_obst_xy_in),       // st_obst_xy = {STAT_OBST_1_X,STAT_OBST_1_Y,STAT_OBST_2_X,STAT_OBST_2_Y,STAT_OBST_3_X,STAT_OBST_3_Y};
     
     .xpos(user_xpos),
-    .ypos(user_ypos)
+    .ypos(user_ypos),
+    .dynamic_o_xpos(xpos_o),
+    .dynamic_o_ypos(ypos_o)
 );
 
   wire [10:0] vcount_out_u, hcount_out_u;
@@ -212,6 +221,50 @@ user_pos_ctl user_pos_ctl (
   .rst(rst),
   .xpos(xpos_o),
   .ypos(ypos_o)
+
+  );
+  
+  wire game_stage;
+  wire [7:0] char_yx;
+  wire [6:0] char_code;
+  
+  char_rom_16x16 my_char_rom_16x16 (
+  
+    .game_stage(game_stage),
+    .char_yx(char_yx),
+    .char_code(char_code)
+  
+  );
+  
+  wire enable;
+  wire [10:0] vcount_out_char, hcount_out_char;
+  wire vsync_out_char, hsync_out_char;
+  wire vblnk_out_char, hblnk_out_char;
+  wire [11:0] rgb_out_char;
+  
+  draw_rect_char my_draw_rect_char (
+  
+  .clk(pclk),    
+  .rst(rst),     
+  .enable(enable),         
+  .hcount_in(hcount_out_u),
+  .hsync_in(hsync_out_u),  
+  .hblank_in(hblnk_out_u), 
+  .vcount_in(vcount_out_u),
+  .vsync_in(vsync_out_u),
+  .vblank_in(vblnk_out_u),
+  .rgb_in(rgb_out_u),
+  .char_pixels(),
+                   
+  .hcount_out(hcount_out_char),
+  .hsync_out(hsync_out_char), 
+  .hblank_out(hblnk_out_char),
+  .vcount_out(vcount_out_char),
+  .vsync_out(vsync_out_char),
+  .vblank_out(vblnk_out_char),
+  .rgb_out(rgb_out_char),
+  .char_yx(char_yx),
+  .char_line(char_code[3:0])
   
   );
   
