@@ -96,8 +96,6 @@ else begin
    end
 end
 
-/* "Warning: registers char_x, char_y are trimmed."
-This is expected behaviour, acceptable to prevent from overflow. */
 assign char_line = char_y[3:0];
 assign char_yx = {char_y[7:4],char_x[6:3]};          //{y_char,x_char}
   
@@ -111,6 +109,9 @@ always @* begin
              && vcount_temp >= YPOS && vcount_temp < (HEIGHT + YPOS)
              && (char_pixels[7 - char_x_del[2:0]]))       // 'char' rectangle
                  rgb_out_nxt = {vcount_temp,1'b1};
+         else if (hcount_temp >= (XPOS - 20) && hcount_temp < (WIDTH + XPOS + 20)
+                 && vcount_temp >= (YPOS - 20) && vcount_temp < (YPOS + 80))
+                    rgb_out_nxt = 12'h000;
          else    //'non-char' area
                  rgb_out_nxt = rgb_temp; 
     end 

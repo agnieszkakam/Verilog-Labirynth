@@ -17,7 +17,10 @@ module vga_example (
   output reg hs,
   output reg [3:0] r,
   output reg [3:0] g,
-  output reg [3:0] b
+  output reg [3:0] b,
+  
+  inout wire ps2_data,
+  inout wire ps2_clk
 );
 
   // Converts 100 MHz clk into 40 MHz pclk.
@@ -174,17 +177,19 @@ debounce rst_debounce (
 );
 
 wire [11:0] user_xpos, user_ypos;
+wire mouse_en;
+wire m_left;
 
 user_pos_ctl user_pos_ctl (
     .clk(clk_500Hz),
     .rst(rst),
     .keys({keyU,keyD,keyR,keyL}),       // {keyU,keyD,keyR,keyL}
-    //.st_obst_xy(st_obst_xy_in),       // st_obst_xy = {STAT_OBST_1_X,STAT_OBST_1_Y,STAT_OBST_2_X,STAT_OBST_2_Y,STAT_OBST_3_X,STAT_OBST_3_Y};
     
     .xpos(user_xpos),
     .ypos(user_ypos),
     .dynamic_o_xpos(xpos_o),
-    .dynamic_o_ypos(ypos_o)
+    .dynamic_o_ypos(ypos_o),
+    .mouse_en(mouse_en)
 );
 
   wire game_won; 
@@ -231,7 +236,6 @@ user_pos_ctl user_pos_ctl (
   wire [6:0] char_code;
   
   char_rom_16x16 goodbye_char_rom (
-    //.game_stage(1'b0),
     .char_yx(char_yx),
     .char_code(char_code)  
   );
@@ -277,6 +281,48 @@ user_pos_ctl user_pos_ctl (
   .char_line(char_line)
   
   );
+//MOUSE-----------------------------------------------------
+
+wire [11:0] xpos_mouse, ypos_mouse;
+wire [3:0] red_out_m, green_out_m, blue_out_m;
+wire en_m;
+ 
+MouseCtl my_MouseCtl (
+    .rst(rst),
+    .clk(clk100MHz),
+    .ps2_clk(ps2_clk),
+    .ps2_data(ps2_data),
+    .xpos(xpos_mouse),
+    .ypos(ypos_mouse),
+    .zpos(),
+    .left(m_left),  
+    .middle(),    
+    .right(),     
+    .new_event(), 
+    .value(12'b0),     
+    .setx(1'b0),      
+    .sety(1'b0),      
+    .setmax_x(1'b0),  
+    .setmax_y(1'b0)    
+);
+
+MouseDisplay my_MDisplay (
+    //inputs
+    .pixel_clk(pclk),
+    .xpos(xpos_mouse),
+    .ypos(ypos_mouse),
+    .hcount(hcount_out_char),
+    .vcount(vcount_out_char),
+    .blank(hblnk_out_char || vblnk_out_char),
+    .red_in(rgb_out_char[11:8]),
+    .green_in(rgb_out_char[7:4]),
+    .blue_in(rgb_out_char[3:0]),
+    //outputs
+    .enable_mouse_display_out(en_m),
+    .red_out(red_out_m),
+    .green_out(green_out_m),
+    .blue_out(blue_out_m)
+);
   
   always @(posedge pclk) begin
     if(rst) begin
@@ -285,9 +331,16 @@ user_pos_ctl user_pos_ctl (
         {r,g,b} <= 0;
     end
     else begin
-        vs <= vsync_out_char;
-        hs <= hsync_out_char;
-        {r,g,b} <= rgb_out_char;
+        if (mouse_en == 1'b1) begin
+            vs <= vsync_out_char;
+            hs <= hsync_out_char;
+            {r,g,b} <= {red_out_m,green_out_m,blue_out_m};
+        end
+        else begin
+            vs <= vsync_out_char;
+            hs <= hsync_out_char;
+            {r,g,b} <= rgb_out_char;
+        end
     end
   end
   

@@ -29,10 +29,13 @@ module user_pos_ctl(
     input wire [11:0] dynamic_o_ypos,
     
     output reg [11:0] xpos,
-    output reg [11:0] ypos
+    output reg [11:0] ypos,
+    output reg mouse_en
 );
 
 localparam OBSTACLE_SIDE = 100;
+localparam WIDTH = 100;    //vertical range
+localparam HEIGHT = 100;
 
 reg [11:0] xpos_nxt, ypos_nxt;
 
@@ -52,9 +55,17 @@ always @* begin
     if ( (xpos >= dynamic_o_xpos - 100 && xpos <= dynamic_o_xpos + 50) && (ypos >= dynamic_o_ypos - 100 && ypos <= dynamic_o_ypos + 250) ) begin
         xpos_nxt = 1;
         ypos_nxt = 1;
+        mouse_en = 1'b0;
+    end
+    
+    else if ( (xpos + WIDTH) > 750 && (ypos+HEIGHT) < 400 && ypos > 200 ) begin
+        xpos_nxt = xpos;
+        ypos_nxt = ypos;
+        mouse_en = 1'b1;
     end
 
     else if (keys[3]) begin //UP
+        mouse_en = 1'b0;
         if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
             if ( (xpos >= 1 && xpos < 200 && ypos >= 1 && ypos <= 100) || ( xpos >= 101 && xpos < 300 && 
             ypos >= 100 && ypos <= 200) || (xpos >= 201 && xpos < 400 && ypos >= 200 && ypos <= 300) ) begin
@@ -94,6 +105,7 @@ always @* begin
     end
   
     else if (keys[2]) begin //DOWN
+        mouse_en = 1'b0;
         if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
             if ( (xpos >= 101 && xpos < 300 && ypos >= 1 && ypos < 200) || (xpos >= 201 && xpos < 400 && ypos >= 100 && ypos < 200) ) begin
                 xpos_nxt = xpos;
@@ -132,6 +144,7 @@ always @* begin
     end
    
     else if (keys[1]) begin //RIGHT
+        mouse_en = 1'b0;
         if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
             if ( (xpos >= 1 && xpos <= 100 && ypos >= 1 && ypos < 100) || (xpos >= 100 && xpos < 200 && ypos >= 1 && ypos < 200) ||
             (xpos >= 200 && xpos < 300 && ypos >= 101 && ypos < 300) ) begin
@@ -171,6 +184,7 @@ always @* begin
     end    
     
     else if (keys[0]) begin //LEFT
+    mouse_en = 1'b0;
         if ( xpos >= 1 && xpos <= 699 && ypos >= 1 && ypos <= 499 ) begin
             if ( (xpos >= 100 && xpos <= 200 && ypos >= 1 && ypos < 100) || (xpos >= 200 && xpos <= 300 && ypos >= 1 && ypos < 200) ||
             (xpos >= 300 && xpos <= 400 && ypos >= 101 && ypos < 300) ) begin
@@ -210,6 +224,7 @@ always @* begin
     end
     
     else begin
+        mouse_en = 1'b0;
         xpos_nxt = xpos;
         ypos_nxt = ypos;
     end

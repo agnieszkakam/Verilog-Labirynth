@@ -39,7 +39,6 @@ parameter YELLOW_RGB = 12'hFF0     //rectangle's coulour (default: yellow)
 	input wire rst,   
 	input wire [11:0] x_pos,
 	input wire [11:0] y_pos, 
-	//input wire [11:0] rgb_pixel,  
 	
 	output reg [10:0]  hcount_out,
     output reg hsync_out,
@@ -49,17 +48,12 @@ parameter YELLOW_RGB = 12'hFF0     //rectangle's coulour (default: yellow)
     output reg vblank_out,
     output reg [11:0] rgb_out,
     output reg game_won
-    //output wire [11:0] pixel_addr
 );
 
 reg [11:0] rgb_temp, rgb_out_nxt;
 //wire [11:0] addrx, addry;
 reg [10:0] hcount_temp, vcount_temp;
 reg hsync_temp, vsync_temp, hblank_temp, vblank_temp, game_won_nxt; 
- 
-//assign addry = vcount_in - y_pos;
-//assign addrx = hcount_in - x_pos;
-//assign pixel_addr = {addry[5:0],addrx[5:0]}; 
 
 //sequential part
 
@@ -119,8 +113,8 @@ always @* begin
         
      // destination reached? not ideally, but at least covering the quarter of the doors' surface
         if ( (x_pos + WIDTH) > 750 && (y_pos+HEIGHT) < 400 && y_pos > 200 )  //make sure to block the user on the right edge of the screen 
-           game_won_nxt = 1'b1;        
-    end            
+           game_won_nxt = 1'b1;      
+    end           
 end
 
 endmodule
