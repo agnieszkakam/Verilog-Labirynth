@@ -41,6 +41,8 @@ reg [11:0] xpos_nxt, ypos_nxt;
 
 always @(posedge clk) begin
     if (rst) begin
+//        xpos_nxt <= 1;
+//        ypos_nxt <= 1;
         xpos <= 1;
         ypos <= 1;
     end

@@ -101,6 +101,61 @@ module vga_example (
     .st_obst_xy(st_obst_xy_in)  
   );
   
+  //---
+    localparam INSTRUCTIONS = 1'b0;
+    localparam SUCCESS = 1'b1;
+    wire game_stage;
+    wire [7:0] char_yx_ins_out;
+    wire [6:0] char_code_bg_out;
+    
+    char_rom_16x16 instructions_char_rom (
+      .mode(INSTRUCTIONS),
+      .char_yx(char_yx_ins_out),
+      .char_code(char_code_bg_out)  
+    );
+    
+    wire [10:0] vcount_out_ins_char, hcount_out_ins_char;
+    wire vsync_out_ins_char, hsync_out_ins_char;
+    wire vblnk_out_ins_char, hblnk_out_ins_char;
+    wire [11:0] rgb_out_ins_char;
+    wire [7:0] char_line_pixels1;
+    wire [3:0] char_line1;
+    
+    font_rom the_font(
+    
+      .clk(pclk),
+      .rst(rst),
+      .addr({char_code_bg_out[6:0],char_line1[3:0]}),
+      .char_line_pixels(char_line_pixels1)
+    
+    );
+    
+    draw_rect_char  #(.XPOS(300), .YPOS(1)) instruction_note (
+    
+    .clk(pclk),    
+    .rst(rst),     
+    .enable(1'b1),                       
+    .hcount_in(hcount_bg_out),
+    .hsync_in(hsync_bg_out),  
+    .hblank_in(hblnk_bg_out), 
+    .vcount_in(vcount_bg_out),
+    .vsync_in(vsync_bg_out),
+    .vblank_in(vblnk_bg_out),
+    .rgb_in(rgb_bg_out),
+    .char_pixels(char_line_pixels1),
+                     
+    .hcount_out(hcount_out_ins_char),
+    .hsync_out(hsync_out_ins_char), 
+    .hblank_out(hblnk_out_ins_char),
+    .vcount_out(vcount_out_ins_char),
+    .vsync_out(vsync_out_ins_char),
+    .vblank_out(vblnk_out_ins_char),
+    .rgb_out(rgb_out_ins_char),
+    .char_yx(char_yx_ins_out),
+    .char_line(char_line1)
+    
+    );
+  //---
   
     wire [11:0] xpos_o, ypos_o;
     wire [10:0] vcount_out_o, hcount_out_o;
@@ -110,14 +165,14 @@ module vga_example (
     
     draw_dynamic_obst my_draw_dynamic_obst (
     
-    .hcount_in(hcount_bg_out),
-    .hsync_in(hsync_bg_out),
-    .hblank_in(hblnk_bg_out),
-    .vcount_in(vcount_bg_out),
-    .vsync_in(vsync_bg_out),
-    .vblank_in(vblnk_bg_out),
+    .hcount_in(hcount_out_ins_char),
+    .hsync_in(hsync_out_ins_char),
+    .hblank_in(hblnk_out_ins_char),
+    .vcount_in(vcount_out_ins_char),
+    .vsync_in(vsync_out_ins_char),
+    .vblank_in(vblnk_out_ins_char),
     .pclk(pclk),
-    .rgb_in(rgb_bg_out),
+    .rgb_in(rgb_out_ins_char),
     .rst(rst),
     
     .x_pos(xpos_o),
@@ -231,28 +286,28 @@ user_pos_ctl user_pos_ctl (
 
   );
   
-  wire game_stage;
-  wire [7:0] char_yx;
-  wire [6:0] char_code;
+  wire [7:0] char_yx2;
+  wire [6:0] char_code2;
   
   char_rom_16x16 goodbye_char_rom (
-    .char_yx(char_yx),
-    .char_code(char_code)  
+    .mode(SUCCESS),
+    .char_yx(char_yx2),
+    .char_code(char_code2)  
   );
   
   wire [10:0] vcount_out_char, hcount_out_char;
   wire vsync_out_char, hsync_out_char;
   wire vblnk_out_char, hblnk_out_char;
   wire [11:0] rgb_out_char;
-  wire [7:0] char_line_pixels;
-  wire [3:0] char_line;
+  wire [7:0] char_line_pixels2;
+  wire [3:0] char_line2;
   
   font_rom my_font(
   
     .clk(pclk),
     .rst(rst),
-    .addr({char_code[6:0],char_line[3:0]}),
-    .char_line_pixels(char_line_pixels)
+    .addr({char_code2[6:0],char_line2[3:0]}),
+    .char_line_pixels(char_line_pixels2)
   
   );
   
@@ -268,7 +323,7 @@ user_pos_ctl user_pos_ctl (
   .vsync_in(vsync_out_u),
   .vblank_in(vblnk_out_u),
   .rgb_in(rgb_out_u),
-  .char_pixels(char_line_pixels),
+  .char_pixels(char_line_pixels2),
                    
   .hcount_out(hcount_out_char),
   .hsync_out(hsync_out_char), 
@@ -277,8 +332,8 @@ user_pos_ctl user_pos_ctl (
   .vsync_out(vsync_out_char),
   .vblank_out(vblnk_out_char),
   .rgb_out(rgb_out_char),
-  .char_yx(char_yx),
-  .char_line(char_line)
+  .char_yx(char_yx2),
+  .char_line(char_line2)
   
   );
 //MOUSE-----------------------------------------------------
